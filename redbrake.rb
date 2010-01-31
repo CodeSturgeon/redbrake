@@ -1,28 +1,49 @@
 #!/usr/bin/env ruby
 
 require 'yaml'
+require 'time'
 
 module RedBrake
-  class Source < Struct.new :path
-    def initilize
-      raw = RedBrake.scan :path
+
+  module Encode
+    def encode
+      'do encode'
+    end
+  end
+
+  class Source
+    def initialize path
+      raw = RedBrake.scan path
       self.titles = {}
       raw.each do |title_number, title_data|
-        self.titles['title_number'] = Title.new title_number,
-                                              Time.new(title_data['duration'])
+        self.titles[title_number] = Title.new title_number,
+                                            Time.parse(title_data['duration'])
         title_data['chapters'].each do |chapter_number, chapter_data|
-          self.titles['title_number'].chapters[chapter_number] = \
-                                                  chapter_data['duration']
+          self.titles[title_number].chapters << 
+                          Chapter.new(chapter_number, chapter_data['duration'])
         end
       end
     end
+    attr_accessor :titles, :path
   end
-  class Title < Struct.new :number, :duration
-    def initilize
-      
+
+  class Title
+    include Encode
+    def initialize number, duration
+      self.chapters = []
+      self.number = number
+      self.duration = duration
     end
+    attr_accessor :number, :duration, :chapters
   end
-  class Chapter < Struct.new :number, :duration
+
+  class Chapter
+    include Encode
+    def initialize number, duration
+      self.number = number
+      self.duration = duration
+    end
+    attr_accessor :number, :duration
   end
 
   def self.scan input_path
@@ -31,7 +52,6 @@ module RedBrake
   end
 
   def self.read_source(input_path, quiet = false)
-
     unless quiet
       print 'Reading input... '
       STDOUT.flush
@@ -42,11 +62,9 @@ module RedBrake
       STDOUT.flush
     end
     output
-
   end
 
   def self.restructure output
-    # FIXME - quote title duration!
     # FIXME - extract chapter duration!
 
     # Remove random output
