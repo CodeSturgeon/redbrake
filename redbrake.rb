@@ -55,6 +55,9 @@ module RedBrake
     # Strip the '+ ' prefix off each line without loosing indent
     output.gsub!(/^([ ]*)\+ (\w)/, '\1\2')
 
+    # Quote the duration
+    output.gsub!(/(duration: )(\S+)/, '\1\'\2\'')
+
     # Make number of angles a property
     output.gsub!(/^  angle\(s\) (\d+)$/, '  angle(s): \1')
 

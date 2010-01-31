@@ -1,5 +1,6 @@
 require 'redbrake'
 require 'test/unit'
+require 'time'
 
 class ParserTest < Test::Unit::TestCase
   def test_sanity
@@ -11,5 +12,6 @@ class ParserTest < Test::Unit::TestCase
     assert_equal obj[9]['subtitle tracks'].length, 3
     assert_equal obj[9]['pixel aspect'], '8/9'
     assert_equal obj[9]['display aspect'], 1.33
+    assert_kind_of Time, Time.parse(obj[9]['duration'])
   end
 end
