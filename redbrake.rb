@@ -5,45 +5,76 @@ require 'time'
 
 module RedBrake
 
-  module Encode
-    def encode
-      'do encode'
+  module Encoder
+    def base_encode filename, title_number, chapters=nil
+      opts = '-e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '
+      opts += '-x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'
+      opts += ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
+      input_path = '...from...'
+      output_path = '...to...'
+      cmd = "HandBrakeCli -t #{title_number} -i #{input_path}"
+      cmd += " -c #{chapters}" if chapters
+      cmd += " -o #{output_path}/#{filename}.m4v"
+      cmd += " #{opts}"
+      puts cmd
     end
   end
 
   class Source
     def initialize path
-      raw = RedBrake.scan path
+      if File.exists? path
+        raw = RedBrake.scan path
+      else
+        raw = RedBrake.output_to_hashes path
+      end
       self.titles = {}
       raw.each do |title_number, title_data|
-        self.titles[title_number] = Title.new title_number,
-                                            Time.parse(title_data['duration'])
+        #puts "t #{title_number}"
+        title = self.add_title title_number, Time.parse(title_data['duration'])
         title_data['chapters'].each do |chapter_number, chapter_data|
-          self.titles[title_number].chapters << 
-                          Chapter.new(chapter_number, chapter_data['duration'])
+          #puts "  c #{chapter_number}"
+          title.add_chapter chapter_number, chapter_data['duration']
         end
       end
+    end
+    def add_title number, duration
+      new_title = Title.new self, number, duration
+      self.titles[number] = new_title
+      new_title
     end
     attr_accessor :titles, :path
   end
 
   class Title
-    include Encode
-    def initialize number, duration
-      self.chapters = []
+    include Encoder
+    def initialize source, number, duration
+      self.source = source
+      self.chapters = {}
       self.number = number
       self.duration = duration
     end
-    attr_accessor :number, :duration, :chapters
+    def add_chapter number, duration
+      new_chapter = Chapter.new self, number, duration
+      self.chapters[number] = new_chapter
+      new_chapter
+    end
+    def encode filename
+      base_encode filename, self.number
+    end
+    attr_accessor :number, :duration, :chapters, :source
   end
 
   class Chapter
-    include Encode
-    def initialize number, duration
+    include Encoder
+    def initialize title, number, duration
+      self.title = title
       self.number = number
       self.duration = duration
     end
-    attr_accessor :number, :duration
+    def encode filename
+      base_encode filename, self.title.number, self.number
+    end
+    attr_accessor :number, :duration, :title, :source
   end
 
   def self.scan input_path
@@ -51,7 +82,7 @@ module RedBrake
     self.output_to_hashes output
   end
 
-  def self.read_source(input_path, quiet = false)
+  def self.read_source(input_path, quiet = true)
     unless quiet
       print 'Reading input... '
       STDOUT.flush
@@ -109,4 +140,5 @@ module RedBrake
     output = self.restructure output
     YAML::load(output)
   end
+
 end
