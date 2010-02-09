@@ -2,31 +2,47 @@
 
 require 'yaml'
 require 'time'
+require 'logger'
+
+LOG = Logger.new(STDOUT)
+LOG.datetime_format = '%H:%M:%S'
 
 module RedBrake
 
   module Encoder
-    def base_encode filename, title_number, chapters=nil
-      opts = '-e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '
-      opts += '-x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'
-      opts += ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
-      input_path = '...from...'
-      output_path = '...to...'
-      cmd = "HandBrakeCli -t #{title_number} -i #{input_path}"
+    def base_encode input_path, filename, title_number, chapters=nil
+      t = 'fast'
+      opts = ''
+      case t
+        when 'std'
+          opts += ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '
+          opts += ' -x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'
+          opts += ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
+        when 'fast'
+          opts += ' -e ffmpeg -q 0.0 -b 500 -r 15 -w 160' 
+          opts += ' -6 mono'
+      end
+      output_path = '/Users/fish/Desktop'
+      cmd = "HandBrakeCli -t #{title_number} -i '#{input_path}'"
       cmd += " -c #{chapters}" if chapters
-      cmd += " -o #{output_path}/#{filename}.m4v"
+      cmd += " -o '#{output_path}/#{filename}.m4v'"
       cmd += " #{opts}"
       puts cmd
+      system cmd
     end
   end
 
   class Source
     def initialize path
-      if File.exists? path
+      LOG.debug path
+      if File.exist? path
         raw = RedBrake.scan path
       else
+        LOG.debug 'Bogus source detected'
         raw = RedBrake.output_to_hashes path
       end
+      LOG.debug raw
+      self.path = path
       self.titles = {}
       raw.each do |title_number, title_data|
         #puts "t #{title_number}"
@@ -59,7 +75,7 @@ module RedBrake
       new_chapter
     end
     def encode filename
-      base_encode filename, self.number
+      base_encode self.source.path, filename, self.number
     end
     attr_accessor :number, :duration, :chapters, :source
   end
@@ -72,13 +88,18 @@ module RedBrake
       self.duration = duration
     end
     def encode filename
-      base_encode filename, self.title.number, self.number
+      base_encode self.title.source.path,
+                  filename,
+                  self.title.number,
+                  self.number
     end
     attr_accessor :number, :duration, :title, :source
   end
 
   def self.scan input_path
+    LOG.debug 'starting scan'
     output = self.read_source input_path
+    LOG.debug 'scan done'
     self.output_to_hashes output
   end
 
@@ -87,7 +108,7 @@ module RedBrake
       print 'Reading input... '
       STDOUT.flush
     end
-    output = `HandBrakeCli -t 0 -i #{input_path} 2>&1`
+    output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
     unless quiet
       puts 'DONE'
       STDOUT.flush
