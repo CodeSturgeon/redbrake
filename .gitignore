@@ -1,4 +1,4 @@
 *.swp
-go.rb
+go*
 manicure.rb
 prname.rb
