@@ -21,6 +21,11 @@ module RedBrake
         when 'fast'
           opts += ' -e ffmpeg -q 0.0 -b 500 -r 15 -w 160' 
           opts += ' -6 mono'
+        when 'interlace'
+          opts += ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '
+          opts += ' -x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'
+          opts += ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
+          opts += ' -d slower'
       end
       output_path = '/Users/fish/Desktop'
       cmd = "HandBrakeCli -t #{title_number} -i '#{input_path}'"
@@ -41,7 +46,7 @@ module RedBrake
         LOG.debug 'Bogus source detected'
         raw = RedBrake.output_to_hashes path
       end
-      LOG.debug raw
+      #LOG.debug raw
       self.path = path
       self.titles = {}
       raw.each do |title_number, title_data|
