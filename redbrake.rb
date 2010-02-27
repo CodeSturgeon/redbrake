@@ -44,6 +44,7 @@ module RedBrake
   end
 
   class Source
+    attr_reader :titles, :path
     def initialize path
       LOG.debug path
       if File.exist? path
@@ -53,61 +54,59 @@ module RedBrake
         raw = RedBrake.output_to_hashes path
       end
       #LOG.debug raw
-      self.path = path
-      self.titles = {}
+      @path = path
+      @titles = {}
       raw.each do |title_number, title_data|
-        #puts "t #{title_number}"
         title = self.add_title title_number, Time.parse(title_data['duration'])
         title_data['chapters'].each do |chapter_number, chapter_data|
-          #puts "  c #{chapter_number}"
           title.add_chapter chapter_number, chapter_data['duration']
         end
       end
     end
+    protected
     def add_title number, duration
       new_title = Title.new self, number, duration
-      self.titles[number] = new_title
+      @titles[number] = new_title
       new_title
     end
-    attr_accessor :titles, :path
   end
 
   class Title
     include Encoder
+    attr_reader :number, :duration, :chapters, :source
     def initialize source, number, duration
-      self.source = source
-      self.chapters = {}
-      self.number = number
-      self.duration = duration
+      @source = source
+      @chapters = {}
+      @number = number
+      @duration = duration
+    end
+    def encode args
+      args[:input_path] ||= @source.path
+      args[:title_number] ||= @number
+      base_encode args
     end
     def add_chapter number, duration
       new_chapter = Chapter.new self, number, duration
-      self.chapters[number] = new_chapter
+      @chapters[number] = new_chapter
       new_chapter
     end
-    def encode filename
-      base_encode :input_path => self.source.path,
-                  :filename => filename,
-                  :title_number => self.number
-    end
-    attr_accessor :number, :duration, :chapters, :source
   end
 
   class Chapter
     include Encoder
+    attr_reader :number, :duration, :title, :source
     def initialize title, number, duration
-      self.title = title
-      self.number = number
-      self.duration = duration
-      self.srouce = title.source
+      @title = title
+      @number = number
+      @duration = duration
+      @source = title.source
     end
-    def encode filename
-      base_encode :input_path => self.title.source.path,
-                  :filename => filename,
-                  :title_number => self.title.number,
-                  :chapters => self.number
+    def encode args
+      args[:input_path] ||= @title.source.path
+      args[:title_number] ||= @title.number
+      args[:chapters] ||= @number
+      base_encode args
     end
-    attr_accessor :number, :duration, :title, :source
   end
 
   def self.scan input_path
