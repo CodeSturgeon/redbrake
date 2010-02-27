@@ -10,10 +10,12 @@ LOG.datetime_format = '%H:%M:%S'
 module RedBrake
 
   # Encoding presets
-  STANDARD = ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '\
-             ' -x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'\
-             ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
-  FAST = ' -e ffmpeg -q 0.0 -b 500 -r 15 -w 160 -6 mono'
+  module Presets
+    STANDARD = ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '\
+              ' -x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'\
+              ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
+    FAST = ' -e ffmpeg -q 0.0 -b 500 -r 15 -w 160 -6 mono'
+  end
 
   module Encoder
     def base_encode(args)
@@ -22,7 +24,7 @@ module RedBrake
 
       args[:output_path] = '/Users/fish/Desktop' unless args[:output_path]
 
-      preset = args[:preset] || RedBrake::STANDARD
+      preset = args[:preset] || RedBrake::Presets::STANDARD
 
       unless args[:filename] then
         args[:filename] = "t#{args[:title_number]}"
