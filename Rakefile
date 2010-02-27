@@ -12,7 +12,6 @@ end
 
 desc "Scan the source"
 task :scan, :source_path do |t, args|
-  require 'PP'
   require 'redbrake'
   puts RedBrake.restructure(RedBrake.read_source(args[:source_path]))
 end
