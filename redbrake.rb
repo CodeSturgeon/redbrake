@@ -85,7 +85,7 @@ module RedBrake
     end
     def encode filename
       base_encode :input_path => self.source.path,
-                  :filename => filename
+                  :filename => filename,
                   :title_number => self.number
     end
     attr_accessor :number, :duration, :chapters, :source
@@ -100,7 +100,7 @@ module RedBrake
       self.srouce = title.source
     end
     def encode filename
-      base_encode :input_path => self.source.path,
+      base_encode :input_path => self.title.source.path,
                   :filename => filename,
                   :title_number => self.title.number,
                   :chapters => self.number
