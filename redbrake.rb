@@ -9,6 +9,9 @@ LOG.datetime_format = '%H:%M:%S'
 
 module RedBrake
 
+  DVD = '/dev/disk1'
+  DEFAULT_OUTPATH = File.expand_path '~/Desktop'
+
   # Encoding presets
   module Presets
     STANDARD = ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '\
@@ -19,34 +22,43 @@ module RedBrake
 
   module Encoder
     def base_encode(args)
-      raise 'Missing input path' unless args[:input_path]
       raise 'Missing title number' unless args[:title_number]
 
-      args[:output_path] = '/Users/fish/Desktop' unless args[:output_path]
-
-      preset = args[:preset] || RedBrake::Presets::STANDARD
+      args[:input_path] ||= DVD
+      args[:output_path] ||= DEFAULT_OUTPATH
+      args[:preset] ||= RedBrake::Presets::STANDARD
+      args[:ext] ||= 'm4v'
 
       unless args[:filename] then
-        args[:filename] = "t#{args[:title_number]}"
-        args[:filename] += "_c#{args[:chapters]}"
+        args[:filename] = "t%02d" % args[:title_number]
+        args[:filename] << "_c%02d" % args[:chapters] if args[:chapters]
       end
 
+      # Build filename
+      full_filename = args[:filename]+'.'+args[:ext]
+      full_out_path = File.join(args[:output_path],full_filename)
+
+      # Build main command
       cmd = "HandBrakeCli -t #{args[:title_number]} -i '#{args[:input_path]}'"
-      cmd += " -c #{args[:chapters]}" if args[:chapters]
-      cmd += ' -d slower' if args[:deinterlace]
-      cmd += " -o '#{args[:output_path]}/#{args[:filename]}.m4v'"
-      cmd += " #{preset}"
-      #cmd += ' 2>&1 >/dev/null'
+      cmd << " -o '#{full_out_path}'"
+      cmd << " #{args[:preset]}"
+
+      # Add options
+      cmd << " -c #{args[:chapters]}" if args[:chapters]
+      cmd << ' -d slower' if args[:deinterlace]
+
+      # Mute noisy output
+      cmd << ' 2>/dev/null'
 
       LOG.info 'Ripping to %s' % full_filename
       LOG.debug cmd
-      #system cmd
+      system cmd
     end
   end
 
   class Source
     attr_reader :titles, :path
-    def initialize path
+    def initialize path=DVD
       # FIXME this is very wrong...
       LOG.debug "Initializing on #{path}"
       if File.exist? path
