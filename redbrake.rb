@@ -50,8 +50,13 @@ module RedBrake
       # Mute noisy output
       cmd << ' 2>/dev/null'
 
-      LOG.info 'Ripping to %s' % full_filename
-      LOG.debug cmd
+      LOG.info "Ripping to #{full_filename}"
+      self.run_cmd(cmd)
+      puts # New line after the encoding output
+      LOG.info "Done ripping to #{full_filename}"
+    end
+    def run_cmd cmd
+      LOG.debug "Running #{cmd}"
       system cmd
     end
   end
