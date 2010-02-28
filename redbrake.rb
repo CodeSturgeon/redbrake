@@ -38,6 +38,7 @@ module RedBrake
       cmd += " #{preset}"
       #cmd += ' 2>&1 >/dev/null'
 
+      LOG.info 'Ripping to %s' % full_filename
       LOG.debug cmd
       #system cmd
     end
@@ -46,7 +47,8 @@ module RedBrake
   class Source
     attr_reader :titles, :path
     def initialize path
-      LOG.debug path
+      # FIXME this is very wrong...
+      LOG.debug "Initializing on #{path}"
       if File.exist? path
         raw = RedBrake.scan path
       else
@@ -55,6 +57,7 @@ module RedBrake
       end
       #LOG.debug raw
       @path = path
+      # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
       raw.each do |title_number, title_data|
         title = self.add_title title_number, Time.parse(title_data['duration'])
@@ -76,11 +79,12 @@ module RedBrake
     attr_reader :number, :duration, :chapters, :source
     def initialize source, number, duration
       @source = source
+      # FIXME chapters should enumerate (each) as an ordred list
       @chapters = {}
       @number = number
       @duration = duration
     end
-    def encode args
+    def encode args={}
       args[:input_path] ||= @source.path
       args[:title_number] ||= @number
       base_encode args
@@ -101,7 +105,7 @@ module RedBrake
       @duration = duration
       @source = title.source
     end
-    def encode args
+    def encode args={}
       args[:input_path] ||= @title.source.path
       args[:title_number] ||= @title.number
       args[:chapters] ||= @number
@@ -110,23 +114,14 @@ module RedBrake
   end
 
   def self.scan input_path
-    LOG.debug 'starting scan'
+    LOG.info 'starting scan %s' % input_path
     output = self.read_source input_path
-    LOG.debug 'scan done'
+    LOG.info 'scan done'
     self.output_to_hashes output
   end
 
-  def self.read_source(input_path, quiet = true)
-    unless quiet
-      print 'Reading input... '
-      STDOUT.flush
-    end
-    output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
-    unless quiet
-      puts 'DONE'
-      STDOUT.flush
-    end
-    output
+  def self.read_source(input_path=DVD)
+    `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
   end
 
   def self.restructure output
