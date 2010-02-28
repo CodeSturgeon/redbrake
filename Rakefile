@@ -1,5 +1,6 @@
 require 'rake'
 require 'rake/testtask'
+require 'redbrake'
 
 task :default => [:test_units]
 
@@ -11,12 +12,11 @@ Rake::TestTask.new("test") do |t|
 end
 
 task :redbrake do
-  require 'redbrake'
    #FIXME set logging level based on LLEVEL
    #FIXME how can I output info at the head of 'rake -T'
 end
 
-desc "Display a scan result (Default source is DVD)"
+desc "Display a scan result (Default source is '%s')" % RedBrake::DEFAULT_INPUT
 task :scan, :source_path, :needs=>:redbrake do |t, args|
   puts RedBrake.clean_scan(args[:source_path])
 end

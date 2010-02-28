@@ -9,7 +9,7 @@ LOG.datetime_format = '%H:%M:%S'
 
 module RedBrake
 
-  DVD = '/dev/disk1'
+  DEFAULT_INPUT = '/dev/disk1'
   DEFAULT_OUTPATH = File.expand_path '~/Desktop'
 
   # Encoding presets
@@ -24,7 +24,7 @@ module RedBrake
     def base_encode(args)
       raise 'Missing title number' unless args[:title_number]
 
-      args[:input_path] ||= DVD
+      args[:input_path] ||= DEFAULT_INPUT
       args[:output_path] ||= DEFAULT_OUTPATH
       args[:preset] ||= RedBrake::Presets::STANDARD
       args[:ext] ||= 'm4v'
@@ -63,7 +63,7 @@ module RedBrake
 
   class Source
     attr_reader :titles, :path
-    def initialize path=DVD
+    def initialize path=DEFAULT_INPUT
       # FIXME this is very wrong...
       LOG.debug "Initializing on #{path}"
       if File.exist? path
