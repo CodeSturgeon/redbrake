@@ -1,6 +1,5 @@
 require 'rake'
 require 'rake/testtask'
-require 'redbrake'
 
 task :default => [:test_units]
 
@@ -11,33 +10,36 @@ Rake::TestTask.new("test") do |t|
   t.warning = true
 end
 
-task :redbrake do
-   #FIXME set logging level based on LLEVEL
-   #FIXME how can I output info at the head of 'rake -T'
+task :env_setup do
+  require 'redbrake'
+  INPUT = ENV['INPUT'] || RedBrake::DEFAULT_INPUT
+  OUTPUT = ENV['OUTPUT'] || RedBrake::DEFAULT_OUTPATH
+  RedBrake::LOG.level = Logger.const_get ENV['LLEVEL'].upcase if ENV['LLEVEL']
 end
 
-desc "Display a scan result (Default source is '%s')" % RedBrake::DEFAULT_INPUT
-task :scan, :source_path, :needs=>:redbrake do |t, args|
-  puts RedBrake.clean_scan(args[:source_path])
+task :make_source do
+  SRC = RedBrake::Source.new INPUT
+end
+
+desc "Display a scan result"
+task :scan, :needs=>:env_setup do |t, args|
+  puts RedBrake.clean_scan INPUT
 end
 
 namespace :rip do
   desc "Rip an entire title."
-  task :title, :title_number, :needs=>:redbrake do |t, args|
-    src = RedBrake::Source.new
-    src.titles[args[:title_number].to_i].encode
+  task :title, :title_number, :needs=>:env_setup do |t, args|
+    SRC.titles[args[:title_number].to_i].encode
   end
   desc "Rip chapters from a title individually."
-  task :chapters, :title_number, :needs=>:redbrake do |t, args|
-    src = RedBrake::Source.new
-    src.titles[args[:title_number].to_i].chapters.each do |chapter_no, chapter|
+  task :chapters, :title_number, :needs=>:env_setup do |t, args|
+    SRC.titles[args[:title_number].to_i].chapters.each do |chapter_no, chapter|
       chapter.encode
     end
   end
   desc "Rip every chapter of every title to preview."
-  task :previews=>:redbrake do
-    src = RedBrake::Source.new
-    src.titles.each do |title_number, title|
+  task :previews=>:env_setup do
+    SRC.titles.each do |title_number, title|
       title.chapters.each{|cn,c|c.encode :preset => RedBrake::Presets::FAST}
     end
   end

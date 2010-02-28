@@ -4,10 +4,11 @@ require 'yaml'
 require 'time'
 require 'logger'
 
-LOG = Logger.new(STDOUT)
-LOG.datetime_format = '%H:%M:%S'
-
 module RedBrake
+
+  LOG = Logger.new(STDOUT)
+  LOG.level = Logger::INFO
+  LOG.datetime_format = '%H:%M:%S'
 
   DEFAULT_INPUT = '/dev/disk1'
   DEFAULT_OUTPATH = File.expand_path '~/Desktop'
@@ -132,7 +133,7 @@ module RedBrake
   end
 
   def self.clean_scan input_path=DEFAULT_INPUT
-    LOG.info "Starting scan of #{input_path}"
+    LOG.info "Starting scan of '#{input_path}'"
     output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
     LOG.info "Scan done"
     self.restructure output
