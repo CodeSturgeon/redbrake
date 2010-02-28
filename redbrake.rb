@@ -67,11 +67,12 @@ module RedBrake
       # FIXME this is very wrong...
       LOG.debug "Initializing on #{path}"
       if File.exist? path
-        raw = RedBrake.scan path
+        output = RedBrake.clean_scan path
       else
-        LOG.debug 'Bogus source detected'
-        raw = RedBrake.output_to_hashes path
+        LOG.debug 'Bogus source assumed'
+        output = path
       end
+      raw = RedBrake.output_to_hashes output
       #LOG.debug raw
       @path = path
       # FIXME titles should enumerate (each) as an ordered list
@@ -130,15 +131,11 @@ module RedBrake
     end
   end
 
-  def self.scan input_path
-    LOG.info 'starting scan %s' % input_path
-    output = self.read_source input_path
-    LOG.info 'scan done'
-    self.output_to_hashes output
-  end
-
-  def self.read_source(input_path=DVD)
-    `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
+  def self clean_scan input_path=DVD
+    LOG.info "Starting scan of #{input_path}"
+    output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
+    LOG.info "Scan done"
+    self.restructure output
   end
 
   def self.restructure output

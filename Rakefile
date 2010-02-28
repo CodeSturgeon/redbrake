@@ -18,8 +18,7 @@ end
 
 desc "Display a scan result (Default source is DVD)"
 task :scan, :source_path, :needs=>:redbrake do |t, args|
-  src = RedBrake.read_source(args[:source_path])
-  puts RedBrake.restructure(src)
+  puts RedBrake.clean_scan(args[:source_path])
 end
 
 namespace :rip do
