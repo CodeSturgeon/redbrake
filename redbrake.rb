@@ -135,7 +135,7 @@ module RedBrake
   def self.clean_scan input_path=DEFAULT_INPUT
     LOG.info "Starting scan of '#{input_path}'"
     output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
-    LOG.info "Scan done"
+    LOG.debug "Scan done"
     self.restructure output
   end
 
