@@ -71,10 +71,9 @@ module RedBrake
         output = RedBrake.clean_scan path
       else
         LOG.debug 'Bogus source assumed'
-        output = path
+        output = RedBrake.restructure(path)
       end
-      raw = RedBrake.output_to_hashes output
-      #LOG.debug raw
+      raw = YAML::load(output)
       @path = path
       # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
@@ -178,11 +177,6 @@ module RedBrake
     # Remake the title as a straight number
     output.gsub!(/^title (\d+:)$/, '\1')
     output
-  end
-
-  def self.output_to_hashes output
-    output = self.restructure output
-    YAML::load(output)
   end
 
 end

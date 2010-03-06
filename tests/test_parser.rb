@@ -7,12 +7,13 @@ SAMPLEFILE_PATH = 'tests/sample_scan.txt'
 class ParserTest < Test::Unit::TestCase
 
   def test_sanity
-    obj = RedBrake.output_to_hashes File.new(SAMPLEFILE_PATH).read
+    obj = YAML::load(RedBrake.restructure(File.new(SAMPLEFILE_PATH).read))
     assert_kind_of Hash, obj
   end
 
   def test_chapter_9
-    obj = RedBrake.output_to_hashes File.new(SAMPLEFILE_PATH).read
+    obj = YAML::load(RedBrake.restructure(File.new(SAMPLEFILE_PATH).read))
+    #obj = RedBrake.clean_scan File.new(SAMPLEFILE_PATH).read
     assert_equal obj[9]['angle(s)'], 1
     assert_equal obj[9]['chapters'].length, 2
     assert_equal obj[9]['subtitle tracks'].length, 3
