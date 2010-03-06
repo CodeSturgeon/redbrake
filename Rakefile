@@ -28,17 +28,17 @@ end
 
 namespace :rip do
   desc "Rip an entire title."
-  task :title, :title_number, :needs=>:env_setup do |t, args|
+  task :title, :title_number, :needs=>[:env_setup, :make_source] do |t, args|
     SRC.titles[args[:title_number].to_i].encode
   end
   desc "Rip chapters from a title individually."
-  task :chapters, :title_number, :needs=>:env_setup do |t, args|
+  task :chapters, :title_number, :needs=>[:env_setup, :make_source] do |t, args|
     SRC.titles[args[:title_number].to_i].chapters.each do |chapter_no, chapter|
       chapter.encode
     end
   end
   desc "Rip every chapter of every title to preview."
-  task :previews=>:env_setup do
+  task :previews=>[:env_setup, :make_source] do
     SRC.titles.each do |title_number, title|
       title.chapters.each{|cn,c|c.encode :preset => RedBrake::Presets::FAST}
     end
