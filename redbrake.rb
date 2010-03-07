@@ -19,6 +19,7 @@ module RedBrake
               ' -x level=30:bframes=0:cabac=0:ref=1:vbv-maxrate=768'\
               ':vbv-bufsize=2000:analyse=all:me=umh:no-fast-pskip=1'
     FAST = ' -e ffmpeg -q 0.0 -b 500 -r 15 -w 160 -6 mono'
+    DEINTERLACE = ' -d slower'
   end
 
   module Encoder
@@ -46,7 +47,7 @@ module RedBrake
 
       # Add options
       cmd << " -c #{args[:chapters]}" if args[:chapters]
-      cmd << ' -d slower' if args[:deinterlace]
+      cmd << RedBrake::Presets::DEINTERLACE if args[:deinterlace]
 
       # Mute noisy output
       cmd << ' 2>/dev/null'
@@ -78,55 +79,49 @@ module RedBrake
       # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
       raw.each do |title_number, title_data|
-        title = self.add_title title_number, Time.parse(title_data['duration'])
-        title_data['chapters'].each do |chapter_number, chapter_data|
-          title.add_chapter chapter_number, chapter_data['duration']
-        end
+        @titles[title_number] = Title.new self, title_number, title_data
       end
-    end
-    protected
-    def add_title number, duration
-      new_title = Title.new self, number, duration
-      @titles[number] = new_title
-      new_title
     end
   end
 
   class Title
     include Encoder
-    attr_reader :number, :duration, :chapters, :source
-    def initialize source, number, duration
+    attr_reader :number, :duration, :chapters, :source, :interlaced
+    def initialize source, number, data
       @source = source
       # FIXME chapters should enumerate (each) as an ordred list
       @chapters = {}
       @number = number
-      @duration = duration
+      @duration = Time.parse(data['duration'])
+      @interlaced = data['interlaced']
+      data['chapters'].each do |chapter_number, chapter_data|
+        @chapters[chapter_number] = Chapter.new self,
+                                    chapter_number, 
+                                    chapter_data
+      end
     end
     def encode args={}
       args[:input_path] ||= @source.path
       args[:title_number] ||= @number
+      args[:deinterlace] = true if self.interlaced
       base_encode args
-    end
-    def add_chapter number, duration
-      new_chapter = Chapter.new self, number, duration
-      @chapters[number] = new_chapter
-      new_chapter
     end
   end
 
   class Chapter
     include Encoder
     attr_reader :number, :duration, :title, :source
-    def initialize title, number, duration
+    def initialize title, number, data
       @title = title
       @number = number
-      @duration = duration
+      @duration = Time.parse(data['duration'])
       @source = title.source
     end
     def encode args={}
       args[:input_path] ||= @title.source.path
       args[:title_number] ||= @title.number
       args[:chapters] ||= @number
+      args[:deinterlace] = true if @title.interlaced
       base_encode args
     end
   end
