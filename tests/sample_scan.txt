@@ -468,7 +468,6 @@ Scanning title 10 of 10...
     + 1, English (iso639-2: eng) (Bitmap)
     + 2, Espanol (iso639-2: spa) (Bitmap)
     + 3, Unknown (iso639-2: und) (Bitmap)
-  + combing detected, may be interlaced or telecined
 + title 8:
   + vts 6, ttn 1, cells 0->1 (44726 blocks)
   + angle(s) 1
