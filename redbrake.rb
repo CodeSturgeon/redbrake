@@ -37,6 +37,7 @@ module RedBrake
       end
 
       # Build filename
+      # FIXME should check for a passed ext as part of the filename...
       full_filename = args[:filename]+'.'+args[:ext]
       full_out_path = File.join(args[:output_path],full_filename)
 
