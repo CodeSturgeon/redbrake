@@ -1,5 +1,6 @@
 require 'redbrake'
 SAMPLEFILE_PATH = 'tests/sample_scan.txt'
+RedBrake::LOG.level = 999 # Turn off log messages
 
 class NegativeRegex
   def initialize(regex)
@@ -19,7 +20,6 @@ end
 
 describe RedBrake::Source do
   before(:all) do
-    RedBrake::LOG.level = 999
     @src = RedBrake::Source.new(File.new(SAMPLEFILE_PATH).read)
   end
   it('Should have 9 titles'){@src.should have(9).titles}
