@@ -13,7 +13,6 @@ class ParserTest < Test::Unit::TestCase
 
   def test_chapter_9
     obj = YAML::load(RedBrake.restructure(File.new(SAMPLEFILE_PATH).read))
-    #obj = RedBrake.clean_scan File.new(SAMPLEFILE_PATH).read
     assert_equal obj[9]['angle(s)'], 1
     assert_equal obj[9]['chapters'].length, 2
     assert_equal obj[9]['subtitle tracks'].length, 3
@@ -28,6 +27,7 @@ class ParserTest < Test::Unit::TestCase
     assert_equal src.titles.length, 9
     assert_kind_of RedBrake::Title, src.titles[9]
     assert_equal src.titles[9].chapters.length, 2
+    assert_equal src.titles[9].interlaced, true
     assert_kind_of RedBrake::Chapter, src.titles[9].chapters[1]
   end
 end
