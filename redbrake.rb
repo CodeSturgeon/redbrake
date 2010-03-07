@@ -54,12 +54,12 @@ module RedBrake
 
       LOG.info "Ripping to #{full_filename}"
       self.run_cmd(cmd)
-      puts # New line after the encoding output
       LOG.info "Done ripping to #{full_filename}"
     end
     def run_cmd cmd
       LOG.debug "Running #{cmd}"
       system cmd
+      puts # New line after the encoding output
     end
   end
 
@@ -70,12 +70,13 @@ module RedBrake
       LOG.debug "Initializing on #{path}"
       if File.exist? path
         output = RedBrake.clean_scan path
+        @path = path
       else
         LOG.debug 'Bogus source assumed'
         output = RedBrake.restructure(path)
+        @path = '/path/to/dummy'
       end
       raw = YAML::load(output)
-      @path = path
       # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
       raw.each do |title_number, title_data|
