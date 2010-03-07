@@ -23,6 +23,7 @@ module RedBrake
   end
 
   module Encoder
+    # TODO Perhaps this would be better as a module method rather than mixin?
     def base_encode(args)
       raise 'Missing title number' unless args[:title_number]
 
