@@ -34,7 +34,7 @@ describe RedBrake::Source do
       @title.encode
     end
     it 'Should encode without DEINTERLACE' do
-      @title.should_receive(:run_cmd).with(negative_re(/.*-d /))
+      RedBrake.should_receive(:run_cmd).with(negative_re(/.*-d /))
       @title.encode
     end
   end
@@ -48,7 +48,7 @@ describe RedBrake::Source do
       @title.encode
     end
     it 'Should encode with DEINTERLACE' do
-      @title.should_receive(:run_cmd).with(/.*-d slower/)
+      RedBrake.should_receive(:run_cmd).with(/.*-d slower/)
       @title.encode
     end
   end

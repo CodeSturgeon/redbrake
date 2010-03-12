@@ -15,7 +15,7 @@ module RedBrake
 
   def run_cmd cmd
     LOG.debug "Running #{cmd}"
-    system cmd
+    system "#{cmd} && echo"
   end
 
   # Encoding presets
@@ -60,21 +60,21 @@ module RedBrake
       cmd << ' 2>/dev/null'
 
       LOG.info "Ripping to #{full_filename}"
-      run_cmd(cmd)
+      RedBrake.run_cmd(cmd)
       LOG.info "Done ripping to #{full_filename}"
     end
   end
 
   class Source
     attr_reader :titles, :path
-    def initialize path=DEFAULT_INPUT
+    def initialize path=DEFAULT_INPUT, yaml=false
       LOG.debug "Initializing on #{path}"
       output = RedBrake.clean_scan path
       @path = path
-      raw = YAML::load(output)
+      yaml ||= YAML::load(output)
       # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
-      raw.each do |title_number, title_data|
+      yaml.each do |title_number, title_data|
         @titles[title_number] = Title.new self, title_number, title_data
       end
     end
