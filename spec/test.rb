@@ -20,7 +20,8 @@ end
 
 describe RedBrake::Source do
   before(:all) do
-    @src = RedBrake::Source.new(File.new(SAMPLEFILE_PATH).read)
+    RedBrake.stub!(:run_cmd).and_return(File.new(SAMPLEFILE_PATH).read)
+    @src = RedBrake::Source.new()
   end
   it('Should have 9 titles'){@src.should have(9).titles}
   describe 'Title 7' do

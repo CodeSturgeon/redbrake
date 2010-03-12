@@ -13,6 +13,11 @@ module RedBrake
   DEFAULT_INPUT = '/dev/disk1'
   DEFAULT_OUTPATH = File.expand_path '~/Desktop'
 
+  def run_cmd cmd
+    LOG.debug "Running #{cmd}"
+    system cmd
+  end
+
   # Encoding presets
   module Presets
     STANDARD = ' -e x264 -b 1500 -f mp4 -I -X 640 -Y 352 -m -2 -T '\
@@ -55,29 +60,17 @@ module RedBrake
       cmd << ' 2>/dev/null'
 
       LOG.info "Ripping to #{full_filename}"
-      self.run_cmd(cmd)
+      run_cmd(cmd)
       LOG.info "Done ripping to #{full_filename}"
-    end
-    def run_cmd cmd
-      LOG.debug "Running #{cmd}"
-      system cmd
-      puts # New line after the encoding output
     end
   end
 
   class Source
     attr_reader :titles, :path
     def initialize path=DEFAULT_INPUT
-      # FIXME this is very wrong...
       LOG.debug "Initializing on #{path}"
-      if File.exist? path
-        output = RedBrake.clean_scan path
-        @path = path
-      else
-        LOG.debug 'Bogus source assumed'
-        output = RedBrake.restructure(path)
-        @path = '/path/to/dummy'
-      end
+      output = RedBrake.clean_scan path
+      @path = path
       raw = YAML::load(output)
       # FIXME titles should enumerate (each) as an ordered list
       @titles = {}
@@ -131,7 +124,7 @@ module RedBrake
 
   def self.clean_scan input_path=DEFAULT_INPUT
     LOG.info "Starting scan of '#{input_path}'"
-    output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
+    output = self.run_cmd("HandBrakeCli -t 0 -i '#{input_path}' 2>&1")
     LOG.debug "Scan done"
     self.restructure output
   end
