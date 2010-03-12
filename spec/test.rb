@@ -20,7 +20,8 @@ end
 
 describe RedBrake::Source do
   before(:all) do
-    RedBrake.stub!(:run_cmd).and_return(File.new(SAMPLEFILE_PATH).read)
+    raw_yaml = RedBrake.restructure(File.new(SAMPLEFILE_PATH).read)
+    RedBrake.stub!(:clean_scan).and_return(raw_yaml)
     @src = RedBrake::Source.new()
   end
   it('Should have 9 titles'){@src.should have(9).titles}

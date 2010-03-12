@@ -13,7 +13,7 @@ module RedBrake
   DEFAULT_INPUT = '/dev/disk1'
   DEFAULT_OUTPATH = File.expand_path '~/Desktop'
 
-  def run_cmd cmd
+  def self.run_cmd cmd
     LOG.debug "Running #{cmd}"
     system "#{cmd} && echo"
   end
@@ -124,7 +124,7 @@ module RedBrake
 
   def self.clean_scan input_path=DEFAULT_INPUT
     LOG.info "Starting scan of '#{input_path}'"
-    output = self.run_cmd("HandBrakeCli -t 0 -i '#{input_path}' 2>&1")
+    output = `HandBrakeCli -t 0 -i '#{input_path}' 2>&1`
     LOG.debug "Scan done"
     self.restructure output
   end
