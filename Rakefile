@@ -45,6 +45,12 @@ namespace :rip do
       chapter.encode
     end
   end
+  desc 'Rip a single titles chapters to preview.'
+  task :preview, :title_number, :needs=>[:env_setup, :make_source] do |t,args|
+    SRC.titles[args[:title_number].to_i].chapters.each do |chapter_no, chapter|
+      chapter.encode :preset => RedBrake::Presets::FAST
+    end
+  end
   desc 'Rip every chapter of every title to preview.'
   task :previews=>[:env_setup, :make_source] do
     SRC.titles.each do |title_number, title|
