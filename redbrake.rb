@@ -15,6 +15,7 @@ module RedBrake
 
   def self.run_cmd cmd
     LOG.debug "Running #{cmd}"
+    # echo ensures there is a newline
     system "#{cmd} && echo"
   end
 
@@ -137,6 +138,9 @@ module RedBrake
 
     # Strip the '+ ' prefix off each line without loosing indent
     output.gsub!(/^([ ]*)\+ (\w)/, '\1\2')
+
+    # Remove any quotes (sometimes in descriptions)
+    output.gsub!(/'/, '')
 
     # Quote the duration
     output.gsub!(/(duration: )(\S+)/, '\1\'\2\'')
