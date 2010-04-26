@@ -43,6 +43,7 @@ describe RedBrake::Source do
     before(:each){@title = @src.titles[9]}
     it('Should have 2 chapters'){@title.should have(2).chapters}
     it('Should be interlaced'){@title.interlaced.should be_true}
+    it('Should have correct duration'){@title.duration.should == '00:01:08'}
     it 'Should pass deinterlace to encode' do
       @title.should_receive(:base_encode).with(
                                           hash_including(:deinterlace => true))
@@ -51,6 +52,11 @@ describe RedBrake::Source do
     it 'Should encode with DEINTERLACE' do
       RedBrake.should_receive(:run_cmd).with(/.*-d slower/)
       @title.encode
+    end
+    describe 'Chapter 1' do
+      it 'Should have correct duration' do
+        @src.titles[9].chapters[1].duration.should == '00:01:08'
+      end
     end
   end
 end

@@ -89,7 +89,7 @@ module RedBrake
       # FIXME chapters should enumerate (each) as an ordred list
       @chapters = {}
       @number = number
-      @duration = Time.parse(data['duration'])
+      @duration = data['duration']
       @interlaced = data['interlaced']
       data['chapters'].each do |chapter_number, chapter_data|
         @chapters[chapter_number] = Chapter.new self,
@@ -111,7 +111,7 @@ module RedBrake
     def initialize title, number, data
       @title = title
       @number = number
-      @duration = Time.parse(data['duration'])
+      @duration = data['duration']
       @source = title.source
     end
     def encode args={}
@@ -142,7 +142,7 @@ module RedBrake
     # Remove any quotes (sometimes in descriptions)
     output.gsub!(/'/, '')
 
-    # Quote the duration
+    # Quote the title durations
     output.gsub!(/(duration: )(\S+)/, '\1\'\2\'')
 
     # Make number of angles a property
@@ -152,7 +152,11 @@ module RedBrake
     output.gsub!(/^([ ]*)(\d+), (\w+ .*)/, '\1\2: \'\3\'')
 
     # Quote all chapter dictionary values
-    output.gsub!(/^(    \d+: )(cells \d.*)/, '\1\'\2\'')
+    output.gsub!(/^(    \d+:) cells (.*?), (\d+) blocks, duration (.*)/,
+                          "\\1\n"+
+                          "      cells: '\\2'\n"+
+                          "      blocks: \\3\n"+
+                          "      duration: '\\4'")
 
     # Make interlace detection in ot a property
     output.gsub!(/combing detected.*/, 'interlaced: true')
