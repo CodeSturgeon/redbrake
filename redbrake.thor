@@ -18,7 +18,7 @@ class Rip < Thor
     src = get_src
     dest = get_dest
     say "ripping title: '#{t_no}'"
-    src.titles[t_no].encode :output_path => dest
+    src.titles[t_no.to_i].encode :output_path => dest
   end
 
   desc 'chapters TITLE_NUMBER', 'rip chapters of a title to seperate files'
@@ -26,18 +26,18 @@ class Rip < Thor
   def chapters(t_no)
     src = get_src
     dest = get_dest
-    src.titles[t_no].chapters.each do |c_no, c|
+    src.titles[t_no.to_i].chapters.each do |c_no, c|
       next if c.duration =~ /00:00:0/
       c.encode :output_path => dest
     end
   end
 
-  desc 'preview', 'rip a single title\'s chapters to previews'
+  desc 'preview TITLE_NUMBER', 'rip a single title\'s chapters to previews'
   method_options defaults
   def preview(t_no)
     src = get_src
     dest = get_dest
-    src.titles[t_no].chapters.each do |c_no, c|
+    src.titles[t_no.to_i].chapters.each do |c_no, c|
       next if c.duration =~ /00:00:0/
       c.encode :output_path => dest, :preset => RedBrake::Presets::FAST
     end
