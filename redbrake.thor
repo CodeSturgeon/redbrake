@@ -64,6 +64,7 @@ class Rip < Thor
     def get_dest
       dest = File.expand_path(options[:out_path])
       File.makedirs dest unless File.directory? dest
+      dest
     end
   end
 
